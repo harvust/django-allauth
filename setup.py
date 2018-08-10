@@ -130,6 +130,7 @@ METADATA = dict(
     install_requires=['Django >= 1.11',
                       openid_package,
                       'requests-oauthlib >= 0.3.0',
+                      'django-phonenumber-field>=2.0.0',
                       "requests"],
     include_package_data=True,
     classifiers=[

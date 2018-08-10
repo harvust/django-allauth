@@ -9,6 +9,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core import exceptions, validators
 from django.urls import reverse
 from django.utils.translation import pgettext, ugettext, ugettext_lazy as _
+from phonenumber_field.validators import validate_international_phonenumber
 
 from . import app_settings
 from ..utils import (
@@ -123,6 +124,13 @@ class LoginForm(forms.Form):
                 label=_("Username"),
                 widget=login_widget,
                 max_length=get_username_max_length())
+        elif app_settings.AUTHENTICATION_METHOD == AuthenticationMethod.MOBILE_EMAIL:
+            login_widget = forms.TextInput(attrs={'placeholder':
+                                                  _('Mobile or Email'),
+                                                  'autofocus': 'autofocus'})
+            login_field = forms.CharField(label=pgettext("field label",
+                                                         "Login"),
+                                          widget=login_widget)
         else:
             assert app_settings.AUTHENTICATION_METHOD \
                 == AuthenticationMethod.USERNAME_EMAIL
@@ -169,6 +177,14 @@ class LoginForm(forms.Form):
             ret = False
         return ret
 
+    def _is_login_mobile(self, login):
+        try:
+            validate_international_phonenumber(login)
+            ret = True
+        except exceptions.ValidationError:
+            ret = False
+        return ret
+
     def clean(self):
         super(LoginForm, self).clean()
         if self._errors:
@@ -187,6 +203,12 @@ class LoginForm(forms.Form):
                     auth_method = app_settings.AuthenticationMethod.EMAIL
                 else:
                     auth_method = app_settings.AuthenticationMethod.USERNAME
+            elif auth_method == app_settings.AuthenticationMethod.MOBILE_EMAIL:
+                login = self.cleaned_data['login']
+                if self._is_login_mobile(login):
+                    auth_method = app_settings.AuthenticationMethod.MOBILE
+                elif self._is_login_email(login):
+                    auth_method = app_settings.AuthenticationMethod.EMAIL
             raise forms.ValidationError(
                 self.error_messages['%s_password_mismatch' % auth_method])
         return self.cleaned_data

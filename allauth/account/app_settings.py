@@ -4,6 +4,8 @@ class AppSettings(object):
         USERNAME = 'username'
         EMAIL = 'email'
         USERNAME_EMAIL = 'username_email'
+        MOBILE = 'mobile'
+        MOBILE_EMAIL = 'mobile_email'
 
     class EmailVerificationMethod:
         # After signing up, keep the user account inactive until the email
