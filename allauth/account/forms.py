@@ -103,6 +103,9 @@ class LoginForm(forms.Form):
 
         'username_password_mismatch':
         _("The username and/or password you specified are not correct."),
+
+        'mobile_password_mismatch':
+        _("The mobile phone number and/or password you specified are not correct."),
     }
 
     def __init__(self, *args, **kwargs):
@@ -158,10 +161,17 @@ class LoginForm(forms.Form):
                 app_settings.AUTHENTICATION_METHOD ==
                 AuthenticationMethod.USERNAME):
             credentials["username"] = login
+        elif (
+                app_settings.AUTHENTICATION_METHOD ==
+                AuthenticationMethod.MOBILE):
+            credentials["mobile"] = login
         else:
             if self._is_login_email(login):
                 credentials["email"] = login
-            credentials["username"] = login
+            elif self._is_login_mobile(login):
+                credentials['mobile'] = login
+            else:
+                credentials["username"] = login
         credentials["password"] = self.cleaned_data["password"]
         return credentials
 
