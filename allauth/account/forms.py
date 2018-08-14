@@ -106,6 +106,9 @@ class LoginForm(forms.Form):
 
         'mobile_password_mismatch':
         _("The mobile phone number and/or password you specified are not correct."),
+
+        'mobile_email_password_mismatch':
+        _("The mobile phone number/email and/or password you specified are not correct."),
     }
 
     def __init__(self, *args, **kwargs):
