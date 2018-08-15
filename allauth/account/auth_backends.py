@@ -23,6 +23,9 @@ class AuthenticationBackend(ModelBackend):
             if not ret:
                 ret = self._authenticate_by_username(**credentials)
         elif app_settings.AUTHENTICATION_METHOD \
+                == AuthenticationMethod.MOBILE:
+            ret = self._authenticate_by_mobile(**credentials)
+        elif app_settings.AUTHENTICATION_METHOD \
                 == AuthenticationMethod.MOBILE_EMAIL:
             ret = self._authenticate_by_mobile(**credentials)
             if not ret:
