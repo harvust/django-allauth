@@ -5,7 +5,7 @@ from django.contrib.auth.backends import ModelBackend
 from . import app_settings
 from ..utils import get_user_model
 from .app_settings import AuthenticationMethod
-from .utils import filter_users_by_email, filter_users_by_username
+from .utils import filter_users_by_email, filter_users_by_username, filter_users_by_mobile
 
 
 _stash = local()
@@ -22,6 +22,14 @@ class AuthenticationBackend(ModelBackend):
             ret = self._authenticate_by_email(**credentials)
             if not ret:
                 ret = self._authenticate_by_username(**credentials)
+        elif app_settings.AUTHENTICATION_METHOD \
+                == AuthenticationMethod.MOBILE:
+            ret = self._authenticate_by_mobile(**credentials)
+        elif app_settings.AUTHENTICATION_METHOD \
+                == AuthenticationMethod.MOBILE_EMAIL:
+            ret = self._authenticate_by_mobile(**credentials)
+            if not ret:
+                ret = self._authenticate_by_email(**credentials)
         else:
             ret = self._authenticate_by_username(**credentials)
         return ret
@@ -52,6 +60,19 @@ class AuthenticationBackend(ModelBackend):
         email = credentials.get('email', credentials.get('username'))
         if email:
             for user in filter_users_by_email(email):
+                if self._check_password(user, credentials["password"]):
+                    return user
+        return None
+
+    def _authenticate_by_mobile(self, **credentials):
+        # Even though allauth will pass along `email`, other apps may
+        # not respect this setting. For example, when using
+        # django-tastypie basic authentication, the login is always
+        # passed as `username`.  So let's place nice with other apps
+        # and use username as fallback
+        mobile = credentials.get('mobile', credentials.get('username'))
+        if mobile:
+            for user in filter_users_by_mobile(mobile):
                 if self._check_password(user, credentials["password"]):
                     return user
         return None

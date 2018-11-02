@@ -372,6 +372,10 @@ def filter_users_by_username(*username):
     return ret
 
 
+def filter_users_by_mobile(mobile):
+    return get_user_model().objects.filter(**{'mobile': mobile})
+
+
 def filter_users_by_email(email):
     """Return list of users by email address
 
